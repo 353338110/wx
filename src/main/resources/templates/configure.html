@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>"微信公众号配置"</title>
+
+    <link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.easyui.min.js"></script>
+</head>
+<body>
+<div style="margin:50px 0;"></div>
+
+<table class="easyui-datagrid" title="公众号配置" id="dg"
+       data-options="singleSelect:true,url:'bc/query'"
+       toolbar="#tb">
+    <thead>
+    <tr>
+        <th style="width:20%" data-options="field:'adaid'">公众号id</th>
+        <th style="width:15%" data-options="field:'adaname'">公众号名字</th>
+        <th style="width:20%" data-options="field:'adatoken'">公众号token</th>
+        <th style="width:15%" data-options="field:'adacode'">公众号code</th>
+        <th style="width:15%" data-options="field:'adaip'">服务器ip地址</th>
+        <th style="width:15%" data-options="field:'adaport'">服务器端口号</th>
+    </tr>
+    </thead>
+</table>
+<div id="tb">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="adaAdd()">添加公众号</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true" onclick="adaDelete()">删除公众号</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="adaSearch()">查询</a>
+</div>
+
+<div id="win" class="easyui-window" closed="true" title="添加新公众号" style="width:500px;height:300px;padding:10px">
+    <form id="ff"  method="get">
+        <table>
+            <tr>
+                <td>公众号id:</td>
+                <td><input name="adaId" type="text" class="easyui-validatebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td>公众号名字:</td>
+                <td><input name="adaName" type="text" ></input></td>
+            </tr>
+            <tr>
+                <td>公众号token:</td>
+                <td><input name="adaToken" type="text" class="easyui-validatebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td>公众号code:</td>
+                <td><input name="adaCode" type="text" class="easyui-validatebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td>服务器ip地址:</td>
+                <td><input name="adaIp" type="text" class="easyui-validatebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td>服务器端口号:</td>
+                <td><input name="adaPort" type="text" class="easyui-validatebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="提交"></input></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function adaSearch() {
+        $('#dg').datagrid('load', {});
+    }
+
+    function adaDelete() {
+        var row = $('#dg').datagrid('getSelected');
+        if (row) {
+            $.messager.confirm('确定', '确定删除id为 ' + row.adaid + ' 的公众号吗?', function (r) {
+                if (r) {
+                    var sendData = {adaId: row.adaid}
+                    Ajax('get', 'bc/delete', sendData, function (data) {
+                        $('#dg').datagrid('reload');
+                    }, function (error) {
+                        console.log(error);
+                    });
+                }
+            });
+        }
+    }
+
+    function adaAdd() {
+        $('#win').window('open');
+        $('#ff').form({
+            url:'bc/create',
+            onSubmit:function(){
+                return $(this).form('validate');
+            },
+            success:function(data){
+                $('#win').window('close');
+                $('#dg').datagrid('reload');
+            }
+        });
+    }
+
+
+    function Ajax(type, url, data, success, failed) {
+        // 创建ajax对象
+        var xhr = null;
+        if (window.XMLHttpRequest) {
+            xhr = new XMLHttpRequest();
+        } else {
+            xhr = new ActiveXObject('Microsoft.XMLHTTP')
+        }
+
+        var type = type.toUpperCase();
+        // 用于清除缓存
+        var random = Math.random();
+
+        if (typeof data == 'object') {
+            var str = '';
+            for (var key in data) {
+                str += key + '=' + data[key] + '&';
+            }
+            data = str.replace(/&$/, '');
+        }
+
+        if (type == 'GET') {
+            if (data) {
+                xhr.open('GET', url + '?' + data, true);
+            } else {
+                xhr.open('GET', url + '?t=' + random, true);
+            }
+            xhr.send();
+
+        } else if (type == 'POST') {
+            xhr.open('POST', url, true);
+            // 如果需要像 html 表单那样 POST 数据，请使用 setRequestHeader() 来添加 http 头。
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+        }
+
+        // 处理返回数据
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    success(xhr.responseText);
+                } else {
+                    if (failed) {
+                        failed(xhr.status);
+                    }
+                }
+            }
+        }
+    }
+
+
+</script>
+</body>
+</html>
