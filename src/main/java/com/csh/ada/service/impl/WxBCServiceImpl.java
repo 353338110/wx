@@ -21,11 +21,10 @@ public class WxBCServiceImpl implements IBCService {
 
 
     @Override
-    public AdaResult adaCreate(String adaId, int adaCode, String adaToken,String adaName,String adaIp,String adaPort) {
+    public AdaResult adaCreate(String adaId, int adaCode,String adaName,String adaIp,String adaPort) {
         AdaBC adaBC = new AdaBC();
         adaBC.setAdaid(adaId);
         adaBC.setAdacode(adaCode);
-        adaBC.setAdatoken(adaToken);
         adaBC.setAdaport(adaPort);
         adaBC.setAdaip(adaIp);
         if (null!=adaName){

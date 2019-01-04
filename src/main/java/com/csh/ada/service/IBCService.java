@@ -6,7 +6,7 @@ import com.csh.ada.pojo.AdaResult;
 import java.util.List;
 
 public interface IBCService {
-    AdaResult adaCreate(String adaId,int adaCode,String adaToken,String adaName,String adaIp,String adaPort);
+    AdaResult adaCreate(String adaId,int adaCode,String adaName,String adaIp,String adaPort);
     AdaResult adaDelete(String adaId);
     AdaResult<List<AdaBC>> adaQuery();
     AdaResult<AdaBC> adaSelect(String adaId);
