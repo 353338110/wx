@@ -156,11 +156,21 @@ public class WxService {
      */
     public static String getRespose(String adaIP,String adaPort,AiTalkBean aiTalkBean, Map<String, String> requestMap) {
         BaseMessage msg = null;
+        String link = "";
         if (aiTalkBean.getUstatus().equals("0")) {
             //有attr属性，说明并给普通文本属性
             //目前只有文本属性跟图文属性，图文属性plustype为imgmsg
             if (null != aiTalkBean.getAttr() && !"".equals(aiTalkBean.getAttr())) {
                 List<Article> articles = new ArrayList<>();
+                for (int i = 0; i < aiTalkBean.getAttr().size(); i++) {
+                    //获取超链接
+                    if (null != aiTalkBean.getAttr().get(i)
+                            && null != aiTalkBean.getAttr().get(i).getPlusmsg()
+                            && !"".equals(aiTalkBean.getAttr().get(i).getPlusmsg())){
+                        link = aiTalkBean.getAttr().get(i).getPlusmsg().substring(5);
+
+                    }
+                }
                 for (int i = 0; i < aiTalkBean.getAttr().size(); i++) {
                     //判断是否为图文属性
                     if (null != aiTalkBean.getAttr().get(i)
@@ -168,16 +178,21 @@ public class WxService {
                             && "imgmsg".equals(aiTalkBean.getAttr().get(i).getPlustype())) {
                         String picURL =adaIP + ":" + adaPort + aiTalkBean.getAttr().get(i).getPlusurl();
                         log.info("图片地址:"+ picURL);
-                        articles.add(new Article(aiTalkBean.getAttr().get(i).getPlustitle(), "", picURL, ""));
+                        articles.add(new Article(aiTalkBean.getAttr().get(i).getPlustitle(), "", picURL, link));
                     }
-
                 }
                 if (articles.size() > 0) {
                     msg = new NewsMessage(requestMap, articles);
+                }else {
+                    if (!"".equals(link)){
+                        link = "<a href=\""+link+"?love"+"\">点击阅读全文</a>";
+                    }
+                    msg = new TextMessage(requestMap, aiTalkBean.getAnswer()+link+analysisAnswerLink(aiTalkBean.getAnswer_link()));
+                   // msg = new TextMessage(requestMap, link);
                 }
 
             } else {
-                msg = new TextMessage(requestMap, aiTalkBean.getAnswer());
+                msg = new TextMessage(requestMap, aiTalkBean.getAnswer()+analysisAnswerLink(aiTalkBean.getAnswer_link()));
             }
 
         }
@@ -236,36 +251,18 @@ public class WxService {
         return xml;
     }
 
-    private static BaseMessage dealMessage(String adaIP, String adaPort, String uid, int code, Map<String, String> requestMap, String message) {
-        log.info("转发信息:" + message);
-        getUid(adaIP, adaPort, code);
-        if (null == uid) {
-            return null;
+    private static String analysisAnswerLink(List<String> answer_link){
+        if (null==answer_link || answer_link.size()<=0){
+            return "";
         }
-        AiTalkBean aiTalkBean = aiTalk(adaIP, adaPort, code, uid, message);
-        if (aiTalkBean.getUstatus().equals("0")) {
-            //有attr属性，说明并给普通文本属性
-            //目前只有文本属性跟图文属性，图文属性plustype为imgmsg
-            if (null != aiTalkBean.getAttr() && !"".equals(aiTalkBean.getAttr())) {
-                List<Article> articles = new ArrayList<>();
-                for (int i = 0; i < aiTalkBean.getAttr().size(); i++) {
-                    //判断是否为图文属性
-                    if (null != aiTalkBean.getAttr().get(i)
-                            && null != aiTalkBean.getAttr().get(i).getPlustype()
-                            && "imgmsg".equals(aiTalkBean.getAttr().get(i).getPlustype())) {
-                        articles.add(new Article(aiTalkBean.getAttr().get(i).getPlustitle(), "", adaIP + ":" + adaPort + aiTalkBean.getAttr().get(i).getPlusurl(), ""));
-                    }
-
-                }
-                if (articles.size() > 0) {
-                    NewsMessage newsMessage = new NewsMessage(requestMap, articles);
-                    return newsMessage;
-                }
-
-            }
-
+        String answerLink = "\n";
+        for (int i = 0; i < answer_link.size(); i++) {
+            int position = answer_link.get(i).indexOf(">")+1;
+            int sunCount = answer_link.get(i).length();
+            String temp ="["+String.valueOf(i+1)+"]"+ answer_link.get(i).substring(position,sunCount-10)+"\n";
+            answerLink = answerLink+temp;
         }
-        TextMessage tm = new TextMessage(requestMap, aiTalkBean.getAnswer());
-        return tm;
+
+        return answerLink;
     }
 }

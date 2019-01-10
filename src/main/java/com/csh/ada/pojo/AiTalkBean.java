@@ -70,9 +70,18 @@ public class AiTalkBean {
          * plustype : imgmsg
          */
 
+        private String plusmsg;
         private String plusurl;
         private String plustitle;
         private String plustype;
+
+        public String getPlusmsg() {
+            return plusmsg;
+        }
+
+        public void setPlusmsg(String plusmsg) {
+            this.plusmsg = plusmsg;
+        }
 
         public String getPlusurl() {
             return plusurl;
