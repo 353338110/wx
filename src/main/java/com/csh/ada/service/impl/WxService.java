@@ -185,7 +185,12 @@ public class WxService {
                     msg = new NewsMessage(requestMap, articles);
                 }else {
                     if (!"".equals(link)){
-                        link = "<a href=\""+link+"?love"+"\">点击阅读全文</a>";
+                        //link = "<a href=\""+link+"?love"+"\">点击阅读全文</a>";
+                        if (!link.contains("http")){
+                            link = "https//:"+link;
+                        }
+                        link = "<a href=\'"+link+"\'>点击阅读全文</a>";
+
                     }
                     msg = new TextMessage(requestMap, aiTalkBean.getAnswer()+link+analysisAnswerLink(aiTalkBean.getAnswer_link()));
                    // msg = new TextMessage(requestMap, link);
